@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script src="https://code.jquery.com/jquery-2.1.3.min.js"></script>
+
+    <script type="text/javascript">
+        $(function() {
+            var conn = new WebSocket('ws://localhost:8080/chat');
+            conn.onmessage = function(e) {
+                $('#chat').append('<p>' + e.data + '</p>');
+            };
+
+            $('#send_button').click(function(e) {
+                var value = $('#message').val();
+                $('#chat').append('<p>' + value + '</p>');
+                sendMessage(value);
+            });
+
+            function sendMessage(msg) {
+                waitForSocketConnection(conn, function() { conn.send(msg); });
+            }
+
+            function waitForSocketConnection(socket, callback){
+                setTimeout(
+                        function(){
+                            if (socket.readyState === 1) {
+                                if(callback !== undefined){
+                                    callback();
+                                }
+                                return;
+                            } else {
+                                waitForSocketConnection(socket, callback);
+                            }
+                        }, 5
+                );
+            }
+        });
+    </script>
+
+    <meta charset=utf-8/>
+
+    <title>Test</title>
+</head>
+<body>
+    <div class="container">
+        <div id="chat"></div>
+        <input id="message" type="text"></div>
+        <button id="send_button">Send</button>
+    </div>
+</body>
+</html>
