@@ -5,7 +5,7 @@
 
     <script type="text/javascript">
         $(function() {
-            var conn = new WebSocket('ws://localhost:8080/chat');
+            var conn = new WebSocket('ws://ws.ubikz.com:8000/chat');
             conn.onmessage = function(e) {
                 $('#chat').append('<p>' + e.data + '</p>');
             };
