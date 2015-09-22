@@ -3,6 +3,7 @@ var express = require('express');
 var app = express();
 var server = require('http').createServer(app);
 var io = require('socket.io')(server);
+var db = require('mongoskin').db('mongodb://localhost:27017/snake_online');
 var port = process.env.PORT || 3000;
 
 server.listen(port, function () {
@@ -23,29 +24,50 @@ io.on('connection', function (socket) {
 
   // when the client emits 'new message', this listens and executes
   socket.on('new message', function (data) {
+    var date = new Date(),
+      object = { date: date.toString(), username: socket.username, message: data };
+    db.collection('messages').insert(object);
     // we tell the client to execute 'new message'
-    socket.broadcast.emit('new message', {
-      username: socket.username,
-      message: data
-    });
+    socket.broadcast.emit('new message', object);
   });
 
   // when the client emits 'add user', this listens and executes
-  socket.on('add user', function (username) {
+  socket.on('add user', function (loginObject) {
+    var login = JSON.parse(loginObject),
+      requestObject = { username: login.username, password: login.password };
     // we store the username in the socket session for this client
-    socket.username = username;
-    // add the client's username to the global list
-    usernames[username] = username;
-    ++numUsers;
-    addedUser = true;
-    socket.emit('login', {
-      numUsers: numUsers
+    socket.username = login.username;
+
+    var resultUser = db.collection('users').find({ username: login.username }).toArray(function(err, result) {
+      if (err) throw err;
+      if (Array.isArray(result) && result.length == 1) {
+        console.info('OK User');
+        var resultLogin = db.collection('users').find(requestObject).toArray(function(err, result) {
+          if (err) throw err;
+          if (Array.isArray(result) && result.length == 1) {
+            console.info('OK User / OK Password');
+            userJoined(login);
+          } else {
+            console.info('User auth failed');
+            socket.emit('auth failed', { });
+          }
+        });
+      } else {
+        console.info('NOT OK user');
+        db.collection('users').insert(requestObject);
+        userJoined(login);
+      }
     });
-    // echo globally (all clients) that a person has connected
-    socket.broadcast.emit('user joined', {
-      username: socket.username,
-      numUsers: numUsers
-    });
+
+    function userJoined(loginObject) {
+      // add the client's username to the global list
+      usernames[loginObject.username] = loginObject.username;
+      ++numUsers;
+      addedUser = true;
+      socket.emit('login', { username: socket.username, numUsers: numUsers });
+      // echo globally (all clients) that a person has connected
+      socket.broadcast.emit('user joined', { username: socket.username, numUsers: numUsers });
+    }
   });
 
   // when the client emits 'typing', we broadcast it to others

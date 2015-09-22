@@ -10,6 +10,7 @@ $(function() {
   // Initialize varibles
   var $window = $(window);
   var $usernameInput = $('.usernameInput'); // Input for username
+  var $passwordInput = $('.passwordInput'); // Input for username
   var $messages = $('.messages'); // Messages area
   var $inputMessage = $('.inputMessage'); // Input message input box
 
@@ -17,7 +18,7 @@ $(function() {
   var $chatPage = $('.chat.page'); // The chatroom page
 
   // Prompt for setting a username
-  var username;
+  var username, password;
   var connected = false;
   var typing = false;
   var lastTypingTime;
@@ -35,19 +36,13 @@ $(function() {
     log(message);
   }
 
-  // Sets the client's username
-  function setUsername () {
-    username = cleanInput($usernameInput.val().trim());
-
+  function setLogin () {
+    var username = cleanInput($usernameInput.val().trim()),
+      password = cleanInput($passwordInput.val().trim());
     // If the username is valid
-    if (username) {
-      $loginPage.fadeOut();
-      $chatPage.show();
-      $loginPage.off('click');
-      $currentInput = $inputMessage.focus();
-
+    if (username && password) {
       // Tell the server your username
-      socket.emit('add user', username);
+      socket.emit('add user', JSON.stringify({ username: username, password: password }));
     }
   }
 
@@ -191,10 +186,6 @@ $(function() {
   // Keyboard events
 
   $window.keydown(function (event) {
-    // Auto-focus the current input when a key is typed
-    if (!(event.ctrlKey || event.metaKey || event.altKey)) {
-      $currentInput.focus();
-    }
     // When the client hits ENTER on their keyboard
     if (event.which === 13) {
       if (username) {
@@ -202,7 +193,7 @@ $(function() {
         socket.emit('stop typing');
         typing = false;
       } else {
-        setUsername();
+        setLogin();
       }
     }
   });
@@ -228,12 +219,19 @@ $(function() {
   // Whenever the server emits 'login', log the login message
   socket.on('login', function (data) {
     connected = true;
+    username = data.username;
+    $loginPage.fadeOut();
+    $chatPage.show();
+    $loginPage.off('click');
+    $currentInput = $inputMessage.focus();
     // Display the welcome message
-    var message = "Welcome to Socket.IO Chat – ";
-    log(message, {
-      prepend: true
-    });
+    var message = "Welcome to Chat – ";
+    log(message, { prepend: true });
     addParticipantsMessage(data);
+  });
+
+  socket.on('auth failed', function (data) {
+    console.info('Auth failed');
   });
 
   // Whenever the server emits 'new message', update the chat body
