@@ -231,9 +231,8 @@ $(function() {
     addParticipantsMessage(data);
   });
 
-  socket.on('auth failed', function (data) {
-    toastr.error('Authentication failed');
-    console.info('Auth failed');
+  socket.on('conn failed', function (data) {
+    toastr.error(data.message);
   });
 
   // Whenever the server emits 'new message', update the chat body
