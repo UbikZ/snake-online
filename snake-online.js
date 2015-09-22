@@ -37,38 +37,41 @@ io.on('connection', function (socket) {
     if (numUsers < maxUsers) {
       var login = JSON.parse(loginObject),
         requestObject = { username: login.username, password: login.password };
-      // we store the username in the socket session for this client
-      socket.username = login.username;
+      if (usernames[login.username] == undefined) {
+        socket.username = login.username;
 
-      var resultUser = db.collection('users').find({ username: login.username }).toArray(function(err, result) {
-        if (err) throw err;
-        if (Array.isArray(result) && result.length == 1) {
-          console.info('OK User');
-          var resultLogin = db.collection('users').find(requestObject).toArray(function(err, result) {
-            if (err) throw err;
-            if (Array.isArray(result) && result.length == 1) {
-              console.info('OK User / OK Password');
-              userJoined(login);
-            } else {
-              console.info('User auth failed');
-              socket.emit('conn failed', { message: 'Authentication failed.' });
-            }
-          });
-        } else {
-          console.info('NOT OK user');
-          db.collection('users').insert(requestObject);
-          userJoined(login);
+        var resultUser = db.collection('users').find({ username: login.username }).toArray(function(err, result) {
+          if (err) throw err;
+          if (Array.isArray(result) && result.length == 1) {
+            console.info('OK User');
+            var resultLogin = db.collection('users').find(requestObject).toArray(function(err, result) {
+              if (err) throw err;
+              if (Array.isArray(result) && result.length == 1) {
+                console.info('OK User / OK Password');
+                userJoined(login);
+              } else {
+                console.info('User auth failed');
+                socket.emit('conn failed', { message: 'Authentication failed.' });
+              }
+            });
+          } else {
+            console.info('NOT OK user');
+            db.collection('users').insert(requestObject);
+            userJoined(login);
+          }
+        });
+
+        function userJoined(loginObject) {
+          usernames[loginObject.username] = loginObject.username;
+          ++numUsers;
+          addedUser = true;
+          socket.emit('login', { username: socket.username, numUsers: numUsers });
+          // echo globally (all clients) that a person has connected
+          socket.broadcast.emit('user joined', { username: socket.username, numUsers: numUsers });
         }
-      });
-
-      function userJoined(loginObject) {
-        // add the client's username to the global list
-        usernames[loginObject.username] = loginObject.username;
-        ++numUsers;
-        addedUser = true;
-        socket.emit('login', { username: socket.username, numUsers: numUsers });
-        // echo globally (all clients) that a person has connected
-        socket.broadcast.emit('user joined', { username: socket.username, numUsers: numUsers });
+      } else {
+        console.info('User ' + login.username + ' already connected.');
+        socket.emit('conn failed', { message: 'You have already an instance launched.' });
       }
     } else {
       console.info('Max users reached.');
