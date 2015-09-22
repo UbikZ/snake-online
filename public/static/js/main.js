@@ -218,6 +218,7 @@ $(function() {
 
   // Whenever the server emits 'login', log the login message
   socket.on('login', function (data) {
+    toastr.info('Authentication granted');
     connected = true;
     username = data.username;
     $loginPage.fadeOut();
@@ -231,6 +232,7 @@ $(function() {
   });
 
   socket.on('auth failed', function (data) {
+    toastr.error('Authentication failed');
     console.info('Auth failed');
   });
 
