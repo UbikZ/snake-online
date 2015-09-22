@@ -20,25 +20,33 @@ var usernames = {};
 var numUsers = 0;
 var maxUsers = 2;
 
+// Game global
+var gameStarted = false;
+var usersReady = false;
+
 io.on('connection', function (socket) {
   var addedUser = false;
 
   // when the client emits 'new message', this listens and executes
   socket.on('new message', function (data) {
-    var date = new Date(),
-      object = { date: date.toString(), username: socket.username, message: data };
-    db.collection('messages').insert(object);
-    // we tell the client to execute 'new message'
-    socket.broadcast.emit('new message', object);
+    var object = { date: (new Date()).toString(), username: socket.username, message: data, admin: false };
+    if (!parseCommands(data)) {
+      db.collection('messages').insert(object);
+      // we tell the client to execute 'new message'
+      socket.broadcast.emit('new message', object);
+    }
   });
 
   // when the client emits 'add user', this listens and executes
   socket.on('add user', function (loginObject) {
-    if (numUsers < maxUsers) {
+    if (numUsers < maxUsers || gameStarted == true) {
       var login = JSON.parse(loginObject),
         requestObject = { username: login.username, password: login.password };
       if (usernames[login.username] == undefined) {
+
+        // Session
         socket.username = login.username;
+        socket.playerReady = false;
 
         var resultUser = db.collection('users').find({ username: login.username }).toArray(function(err, result) {
           if (err) throw err;
@@ -60,15 +68,6 @@ io.on('connection', function (socket) {
             userJoined(login);
           }
         });
-
-        function userJoined(loginObject) {
-          usernames[loginObject.username] = loginObject.username;
-          ++numUsers;
-          addedUser = true;
-          socket.emit('login', { username: socket.username, numUsers: numUsers });
-          // echo globally (all clients) that a person has connected
-          socket.broadcast.emit('user joined', { username: socket.username, numUsers: numUsers });
-        }
       } else {
         console.info('User ' + login.username + ' already connected.');
         socket.emit('conn failed', { message: 'You have already an instance launched.' });
@@ -99,7 +98,7 @@ io.on('connection', function (socket) {
     if (addedUser) {
       delete usernames[socket.username];
       --numUsers;
-
+      if (socket.playerReady) --usersReady;
       // echo globally that this client has left
       socket.broadcast.emit('user left', {
         username: socket.username,
@@ -107,4 +106,57 @@ io.on('connection', function (socket) {
       });
     }
   });
+
+  // Functions
+
+  function parseCommands(message) {
+    if (message.indexOf('/') == 0) {
+      var object = { date: (new Date()).toString(), username: 'ADMIN', admin: true };
+      switch (message) {
+        case '/start':
+          if (socket.playerReady) {
+            object.message = 'You are already ready !';
+            socket.emit('new message', object);
+          } else {
+            socket.playerReady = true;
+            usersReady++;
+            object.message = 'Players: ' + usersReady + '/' + numUsers + ' are ready !';
+            io.sockets.emit('new message', object);
+          }
+          break;
+        case '/stop':
+          if (socket.playerReady) {
+            socket.playerReady = false;
+            usersReady--;
+            object.message = 'Players: ' + usersReady + '/' + numUsers + ' are ready !';
+            io.sockets.emit('new message', object);
+          } else {
+            object.message = 'You are already not ready !';
+            socket.emit('new message', object);
+          }
+          break;
+        case '/help':
+          object.message = 'Type "/start" to be ready, or "/stop" to interupt the queue.';
+          socket.emit('new message', object);
+          break;
+        default:
+          console.info(socket.playerReady);
+          object.message = 'Bad command, type "/help" for more information.';
+          socket.emit('new message', object);
+          break;
+      }
+
+      return true;
+    }
+    return false;
+  }
+
+  function userJoined(loginObject) {
+    usernames[loginObject.username] = loginObject.username;
+    ++numUsers;
+    addedUser = true;
+    socket.emit('login', { username: socket.username, numUsers: numUsers });
+    // echo globally (all clients) that a person has connected
+    socket.broadcast.emit('user joined', { username: socket.username, numUsers: numUsers });
+  }
 });
