@@ -92,6 +92,10 @@ ul {
 
 /* Chat page */
 
+aside {
+  float: left;
+}
+
 .chat.page {
   display: none;
 }
@@ -116,6 +120,7 @@ ul {
 /* Messages */
 
 .chatArea {
+  width: 20%;
   height: 100%;
   padding-bottom: 60px;
 }
@@ -151,4 +156,11 @@ ul {
   position: absolute;
   right: 0;
   width: 100%;
+}
+
+.gameSection {
+  width: 60%;
+}
+.ladderSection {
+  width: 20%;
 }
