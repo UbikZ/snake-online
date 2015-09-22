@@ -1,4 +1,4 @@
 .idea
-vendor
-composer.lock
 node_modules
+public/static/dist
+public/static/vendor
