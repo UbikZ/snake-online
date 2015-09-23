@@ -230,6 +230,7 @@ $(function() {
     var message = "Welcome to Chat – ";
     log(message, { prepend: true });
     addParticipantsMessage(data);
+    App.Game.init(socket);
   });
 
   socket.on('conn failed', function (data) {

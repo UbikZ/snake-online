@@ -23,6 +23,7 @@ var maxUsers = 2;
 // Game global
 var gameStarted = false;
 var usersReady = false;
+var snakes = {};
 
 io.on('connection', function (socket) {
   var addedUser = false;
@@ -35,6 +36,20 @@ io.on('connection', function (socket) {
       // we tell the client to execute 'new message'
       socket.broadcast.emit('new message', object);
     }
+  });
+
+  socket.on('send coords', function(data) {
+    var coord = JSON.parse(data);
+    snakes[socket.username] = [];
+    if (coord) {
+      snakes[socket.username].push(coord);
+    }
+  });
+
+  socket.on('get coords', function() {
+    var tempSnakes = snakes;
+    delete tempSnakes[socket.username];
+    socket.emit('send coords', tempSnakes);
   });
 
   // when the client emits 'add user', this listens and executes
