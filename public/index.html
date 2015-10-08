@@ -1,38 +1,18 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Chat Example</title>
-  <link rel="stylesheet" href="static/dist/css/app.css">
-  <link rel="stylesheet" href="static/dist/css/vendor.css">
+    <meta charset="UTF-8">
+    <title>Chat Example</title>
+    <link rel="stylesheet" href="static/dist/css/app.min.css">
+    <link rel="stylesheet" href="static/dist/css/vendor.min.css">
 </head>
 <body>
-<ul class="pages">
-  <li class="chat page">
-    <!--<aside class="chat_section">-->
-      <aside class="chatArea">
-        <ul class="messages"></ul>
-      </aside>
-      <aside class="gameSection">
-        <canvas id="canvas" width="1000px" height="800px"></canvas>
-      </aside>
-      <aside class="ladderSection">
-        [ ladder ]
-      </aside>
-      <input class="inputMessage" placeholder="Type here..."/>
-    <!--</aside>-->
-    <!---->
-  </li>
-  <li class="login page">
-    <div class="form">
-      <input class="usernameInput" type="text" maxlength="14" placeholder="Username"/><br />
-      <input class="passwordInput" type="password" maxlength="14" placeholder="Password" />
+    <div class="gameSection">
+        <canvas id="canvas" width="1600" height="900"></canvas>
     </div>
-  </li>
-</ul>
 
-<script src="/socket.io/socket.io.js"></script>
-<script src="static/dist/js/vendor.js"></script>
-<script src="static/dist/js/app.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="static/dist/js/vendor.min.js"></script>
+    <script src="static/dist/js/app.min.js"></script>
 </body>
 </html>
