@@ -13,7 +13,7 @@ Game.Control = (function () {
   /**
    *
    */
-  function init()
+  function enable()
   {
     direction = getDirection(Math.floor(Math.random() * 4));
     $(document).keydown(function(e){
@@ -28,6 +28,14 @@ Game.Control = (function () {
         direction = DOWN;
       }
     });
+  }
+
+  /**
+   *
+   */
+  function disable()
+  {
+    $(document).unbind('keydown');
   }
 
   /**
@@ -72,7 +80,8 @@ Game.Control = (function () {
 
   // Public
   return {
-    init: init,
+    enable: enable,
+    disable: disable,
     listen: listen,
     currentDirection: direction,
   };
