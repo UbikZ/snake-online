@@ -58,5 +58,6 @@ var Renderer = function(canvasDOM) {
     properties: properties,
     drawBackground: drawBackground,
     drawPoints: drawPoints,
+    drawPoint: drawPoint,
   };
 };

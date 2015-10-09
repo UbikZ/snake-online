@@ -17,6 +17,7 @@ var users = {};
 
 io.on('connection', function (ioSocket) {
   var socket = ioSocket;
+
   // Sockets binding
   (function io() {
     socket.on('client.user.connect', function() {
