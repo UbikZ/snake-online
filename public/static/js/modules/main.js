@@ -19,6 +19,8 @@ Game.Main = (function () {
     canvas = $canvas[0];
     renderer = new Renderer($canvas);
     currentSnake = new Snake(renderer.properties());
+    Game.Socket.init();
+    Game.Socket.connect();
   }
 
   /**
