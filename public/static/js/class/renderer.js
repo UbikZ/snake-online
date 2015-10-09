@@ -6,7 +6,7 @@ var Renderer = function(canvasDOM) {
     ctx = canvas.getContext('2d'),
     width = $canvas.width(),
     height = $canvas.height(),
-    weight = 10;  // todo: config on server
+    weight = $canvas.attr('weight');
 
   /**
    *

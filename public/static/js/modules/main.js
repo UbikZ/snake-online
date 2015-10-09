@@ -15,10 +15,11 @@ Game.Main = (function () {
    * @param $canvas
    */
   function init($canvas) {
+    Game.Socket.init($canvas);
     canvas = $canvas[0];
+
     renderer = new Renderer($canvas);
     currentSnake = new Snake(renderer.properties());
-    Game.Socket.init();
     Game.Socket.connect();
   }
 

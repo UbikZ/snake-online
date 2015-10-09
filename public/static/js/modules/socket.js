@@ -9,7 +9,8 @@ Game.Socket = (function () {
    *
    */
   function init() {
-    socket.on('server.user.notify', serverUserNotify)
+    socket.on('server.user.notify', serverUserNotify);
+    socket.on('server.game.load', serverGameLoad);
   }
 
   /**
@@ -36,6 +37,14 @@ Game.Socket = (function () {
         toastr.error(data.message);
         break;
     }
+  }
+
+  /**
+   *
+   * @param data
+   */
+  function serverGameLoad(data) {
+    // todo : stuff to load
   }
 
   // Public

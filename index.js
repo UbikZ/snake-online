@@ -12,18 +12,20 @@ server.listen(port, function () {
 // Routing
 app.use(express.static(__dirname + '/public'));
 
+var width = 1600, height = 900, weight = 10;
 var usernames = ['Blanche Neige', 'Gepeto', 'MacFly', 'Bamako', 'Jean-François Copé'];
 var users = {};
 
 io.on('connection', function (ioSocket) {
   var socket = ioSocket;
 
+
   // Sockets binding
   (function io() {
+    socket.emit('server.game.load', { width: width, height: height, weight: weight });
     socket.on('client.user.connect', function() {
       socket.username = getAvailableUsername();
       users[socket.username] = {};
-      console.info('New user ' + socket.username + ' !');
       socket.emit('server.user.notify', msg('Welcome ' + socket.username, 'info'));
       socket.broadcast.emit('server.user.notify', msg('User ' + socket.username + ' connected !', 'info'));
     });
