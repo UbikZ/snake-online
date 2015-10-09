@@ -12,16 +12,14 @@ var Renderer = function(canvasDOM) {
    *
    * @returns {{width: *, height: *, weight: number}}
    */
-  function properties()
-  {
+  function properties() {
     return { width: width, height: height, weight: weight };
   }
 
   /**
    *
    */
-  function drawBackground()
-  {
+  function drawBackground() {
     ctx.fillStyle = "white";
     ctx.fillRect(0, 0, width, height);
     ctx.strokeStyle = "black";
@@ -33,8 +31,7 @@ var Renderer = function(canvasDOM) {
    * @param positions
    * @param options
    */
-  function drawPoints(positions, options)
-  {
+  function drawPoints(positions, options) {
     options = $.extend({}, { fillStyle: 'blue', strokeStyle: 'white' }, options);
     positions.forEach(function(position) {
       drawPoint(position.x, position.y, options);
@@ -47,8 +44,7 @@ var Renderer = function(canvasDOM) {
    * @param posY
    * @param options
    */
-  function drawPoint(posX, posY, options)
-  {
+  function drawPoint(posX, posY, options) {
     options = $.extend({}, { fillStyle: 'blue', strokeStyle: 'white' }, options);
     ctx.fillStyle = options.fillStyle;
     ctx.fillRect(posX * weight, posY * weight, weight, weight);

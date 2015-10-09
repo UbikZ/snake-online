@@ -14,8 +14,7 @@ Game.Main = (function () {
    *
    * @param $canvas
    */
-  function init($canvas)
-  {
+  function init($canvas) {
     canvas = $canvas[0];
     renderer = new Renderer($canvas);
     currentSnake = new Snake(renderer.properties());
@@ -26,8 +25,7 @@ Game.Main = (function () {
   /**
    *
    */
-  function start()
-  {
+  function start() {
     if (typeof loop == "undefined") {
       Game.Control.enable();
       loop = setInterval(mainLoop, 60);
@@ -37,8 +35,7 @@ Game.Main = (function () {
   /**
    *
    */
-  function mainLoop()
-  {
+  function mainLoop() {
     Game.Control.listen(currentSnake);
     renderer.drawBackground();
     renderer.drawPoints(currentSnake.positions);
@@ -47,8 +44,7 @@ Game.Main = (function () {
   /**
    *
    */
-  function stop()
-  {
+  function stop() {
     if (typeof loop != "undefined") {
       Game.Control.disable();
       clearInterval(loop);
@@ -59,8 +55,7 @@ Game.Main = (function () {
   /**
    *
    */
-  function reset()
-  {
+  function reset() {
     // todo
   }
 

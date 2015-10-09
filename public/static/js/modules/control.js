@@ -13,8 +13,7 @@ Game.Control = (function () {
   /**
    *
    */
-  function enable()
-  {
+  function enable() {
     direction = getDirection(Math.floor(Math.random() * 4));
     $(document).keydown(function(e){
       var key = e.which;
@@ -33,8 +32,7 @@ Game.Control = (function () {
   /**
    *
    */
-  function disable()
-  {
+  function disable() {
     $(document).unbind('keydown');
   }
 
@@ -42,8 +40,7 @@ Game.Control = (function () {
    *
    * @param instanceSnake
    */
-  function listen(instanceSnake)
-  {
+  function listen(instanceSnake) {
     snake = instanceSnake;
     if (direction == LEFT && direction != RIGHT) {
       snake.left();
