@@ -23,16 +23,18 @@ io.on('connection', function (ioSocket) {
       socket.username = getAvailableUsername();
       users[socket.username] = {};
       console.info('New user ' + socket.username + ' !');
-      socket.emit('server.user.notify', msg('Welcome ' + socket.username));
+      socket.emit('server.user.notify', msg('Welcome ' + socket.username, 'info'));
+      socket.broadcast.emit('server.user.notify', msg('User ' + socket.username + ' connected !', 'info'));
     });
     socket.on('disconnect', function () {
       delete users[socket.username];
+      socket.broadcast.emit('server.user.notify', msg('User ' + socket.username + ' leaved !', 'info'));
     });
   })();
 
   // Helpers
-  function msg(content) {
-    return { date: (new Date()).toString(), user: socket.username, message: content };
+  function msg(content, type) {
+    return { date: (new Date()).toString(), type: type, user: socket.username, message: content };
   }
 
   function getAvailableUsername() {
