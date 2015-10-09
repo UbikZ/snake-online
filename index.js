@@ -20,13 +20,13 @@ io.on('connection', function (ioSocket) {
   // Sockets binding
   (function io() {
     socket.on('client.user.connect', function() {
-      // todo: have to be uniq
-      socket.username = 'Guest' + Math.floor(Math.random() * 100);
+      socket.username = getAvailableUsername();
+      users[socket.username] = {};
       console.info('New user ' + socket.username + ' !');
       socket.emit('server.user.notify', msg('Welcome ' + socket.username));
     });
     socket.on('disconnect', function () {
-      // todo
+      delete users[socket.username];
     });
   })();
 
@@ -34,6 +34,17 @@ io.on('connection', function (ioSocket) {
   function msg(content) {
     return { date: (new Date()).toString(), user: socket.username, message: content };
   }
+
+  function getAvailableUsername() {
+    var availableUsernames = usernames.diff(Object.keys(users)),
+      randIndex = Math.floor(Math.random() * availableUsernames.length);
+
+    return availableUsernames[randIndex];
+  }
 });
+
+Array.prototype.diff = function(a) {
+  return this.filter(function(i) { return a.indexOf(i) < 0; });
+};
 
 
