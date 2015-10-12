@@ -6,9 +6,9 @@ Game.Main = (function () {
   // Game design
   var canvas, renderer;
   // Game positions
-  var currentSnake, snakes, foods;
+  var currentSnake, snakes = {}, foods;
   // Game
-  var loop;
+  var loop, posLoop, socket;
 
   /**
    *
@@ -19,8 +19,8 @@ Game.Main = (function () {
 
     renderer = new Renderer($canvas);
     currentSnake = new Snake(renderer.properties());
-    Game.Socket.connect();
-    Game.Socket.init(currentSnake, renderer);
+    socket = new Socket(io(), currentSnake);
+    socket.connect();
   }
 
   /**
@@ -30,6 +30,7 @@ Game.Main = (function () {
     if (typeof loop == "undefined") {
       Game.Control.enable();
       loop = setInterval(mainLoop, 60);
+      posLoop = setInterval(positionLoop, 30);
     }
   }
 
@@ -39,9 +40,22 @@ Game.Main = (function () {
   function mainLoop() {
     Game.Control.listen(currentSnake);
     renderer.drawBackground();
-    Game.Socket.send(currentSnake.positions);
-    Game.Socket.listen();
+    socket.send(currentSnake.positions);
     renderer.drawPoints(currentSnake.positions);
+    if (snakes) {
+      snakes.forEach(function(snake) {
+        renderer.drawPoints(snake);
+      });
+    }
+  }
+
+  /**
+   *
+   */
+  function positionLoop() {
+    socket.listen();
+    // todo: dirty, dont pass with pseudo 'globals'
+    snakes = Game.positions;
   }
 
   /**
@@ -51,7 +65,8 @@ Game.Main = (function () {
     if (typeof loop != "undefined") {
       Game.Control.disable();
       clearInterval(loop);
-      loop = undefined;
+      clearInterval(posLoop);
+      loop = posLoop = undefined;
     }
   }
 

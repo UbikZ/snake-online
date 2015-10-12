@@ -33,9 +33,11 @@ var Renderer = function(canvasDOM) {
    */
   function drawPoints(positions, options) {
     options = $.extend({}, { fillStyle: 'blue', strokeStyle: 'white' }, options);
-    positions.forEach(function(position) {
-      drawPoint(position.x, position.y, options);
-    });
+    if (positions) {
+      positions.forEach(function(position) {
+        drawPoint(position.x, position.y, options);
+      });
+    }
   }
 
   /**
