@@ -2,6 +2,7 @@ var Snake = function(options) {
   'use strict';
 
   var positions = [];
+  var username;
   var settings = $.extend({}, {
       width:  800,
       height: 800,
@@ -105,6 +106,7 @@ var Snake = function(options) {
   return {
     positions: positions,
     settings: settings,
+    username: username,
     right: right,
     left: left,
     up: up,

@@ -15,12 +15,12 @@ Game.Main = (function () {
    * @param $canvas
    */
   function init($canvas) {
-    Game.Socket.init($canvas);
     canvas = $canvas[0];
 
     renderer = new Renderer($canvas);
     currentSnake = new Snake(renderer.properties());
     Game.Socket.connect();
+    Game.Socket.init(currentSnake, renderer);
   }
 
   /**
@@ -39,6 +39,8 @@ Game.Main = (function () {
   function mainLoop() {
     Game.Control.listen(currentSnake);
     renderer.drawBackground();
+    Game.Socket.send(currentSnake.positions);
+    Game.Socket.listen();
     renderer.drawPoints(currentSnake.positions);
   }
 

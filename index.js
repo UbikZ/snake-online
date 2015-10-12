@@ -19,19 +19,31 @@ var users = {};
 io.on('connection', function (ioSocket) {
   var socket = ioSocket;
 
-
-  // Sockets binding
+  // Sockets I/O
   (function io() {
-    socket.emit('server.game.load', { width: width, height: height, weight: weight });
     socket.on('client.user.connect', function() {
       socket.username = getAvailableUsername();
       users[socket.username] = {};
+      socket.emit('server.game.load', { username : socket.username });
       socket.emit('server.user.notify', msg('Welcome ' + socket.username, 'info'));
       socket.broadcast.emit('server.user.notify', msg('User ' + socket.username + ' connected !', 'info'));
     });
     socket.on('disconnect', function () {
       delete users[socket.username];
       socket.broadcast.emit('server.user.notify', msg('User ' + socket.username + ' leaved !', 'info'));
+    });
+  })();
+
+  // Sockets Game
+  (function game() {
+    socket.on('client.game.user.send.positions', function(positions) {
+      if (socket.username) {
+        users[socket.username].positions = positions;
+        socket.emit('server.game.users.positions', users);
+      }
+    });
+    socket.on('client.game.user.receive.positions', function(data) {
+      socket.emit('server.game.users.positions', users);
     });
   })();
 

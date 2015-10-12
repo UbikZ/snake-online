@@ -4,13 +4,19 @@ Game.Socket = (function () {
   'use strict';
 
   var socket = io();
+  var rendererInstance;
+  var snakeInstance;
 
   /**
    *
    */
-  function init() {
+  function init(diSnake, diRenderer) {
+    rendererInstance = diRenderer;
+    snakeInstance = diSnake;
+
     socket.on('server.user.notify', serverUserNotify);
     socket.on('server.game.load', serverGameLoad);
+    socket.on('server.game.users.positions', serverGameUsersPositions);
   }
 
   /**
@@ -18,6 +24,34 @@ Game.Socket = (function () {
    */
   function clientUserConnect() {
     socket.emit('client.user.connect', {});
+  }
+
+  /**
+   *
+   * @param positions
+   */
+  function send(positions) {
+    socket.emit('client.game.user.send.positions', positions);
+  }
+
+  /**
+   *
+   */
+  function listen()
+  {
+    socket.emit('client.game.user.receive.positions', {});
+  }
+
+  /**
+   *
+   * @param users
+   */
+  function serverGameUsersPositions(users) {
+    for (var username in users) {
+      if (users.hasOwnProperty(username) && username != snakeInstance.username) { 
+        rendererInstance.drawPoints(users[username].positions);
+      }
+    }
   }
 
   /**
@@ -44,12 +78,14 @@ Game.Socket = (function () {
    * @param data
    */
   function serverGameLoad(data) {
-    // todo : stuff to load
+    snakeInstance.name = data.username;
   }
 
   // Public
   return {
     init: init,
     connect: clientUserConnect,
+    send: send,
+    listen: listen,
   };
 })();
