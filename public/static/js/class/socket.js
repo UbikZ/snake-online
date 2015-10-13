@@ -12,8 +12,9 @@ var Socket = function(_ws) {
     socket.addEventListener('open', function(e) {
       console.log('open', e);
     });
-    socket.addEventListener('message', function(data) {
-      var type = data.type;
+    socket.addEventListener('message', function(message) {
+      var data = JSON.parse(message.data), type = data.type;
+      //console.info(data);
       if (type) {
         switch (type) {
           case 'server.user.notify':
@@ -109,7 +110,7 @@ var Socket = function(_ws) {
       socket.emit(type, content);
     } else {
       waitConnection(socket, function() {
-        console.info('Emit to ' + type);
+        //console.info('Emit to ' + type + ' with ' + content);
         socket.send(JSON.stringify({type: type, content: content}));
       });
     }

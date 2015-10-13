@@ -37,7 +37,6 @@ class Snake implements MessageComponentInterface
      */
     public function onOpen(ConnectionInterface $conn)
     {
-        // Store the new connection to send messages to later
         $this->clients->attach($conn);
 
         echo "New connection! ({$conn->resourceId})\n";
@@ -49,15 +48,13 @@ class Snake implements MessageComponentInterface
      */
     public function onMessage(ConnectionInterface $from, $msg)
     {
-        var_dump($msg);
         $data = $this->parse($msg);
         $numRecv = count($this->clients) - 1;
 
         if (isset($data['type'])) {
             switch ($data['type']) {
                 case self::CLIENT_USER_CONNECT:
-                    echo "pouet";
-                    $this->clientUserConnect($from, $this->parse($data['content']));
+                    $this->clientUserConnect($from, $data['content']);
                     break;
                 case self::CLIENT_GAME_USER_SEND_POSITIONS:
                     break;
@@ -73,11 +70,6 @@ class Snake implements MessageComponentInterface
                 $from->resourceId, $msg, $numRecv
             );
         }
-
-
-
-
-        $this->broadcast($msg, $from, false);
     }
 
     /**
@@ -111,12 +103,13 @@ class Snake implements MessageComponentInterface
      */
     private function clientUserConnect(ConnectionInterface $conn, array $data)
     {
-        echo 'Client connect method';
         $msg = ['type' => self::SERVER_USER_NOTIFY, 'content' => [
             'type' => 'info',
             'message' => 'New player ('.$conn->resourceId.') connected !',
         ]];
-        $this->broadcast($msg, null);
+        $this->broadcast($msg, $conn, false);
+        $msg['content']['message'] = 'Welcome '.$conn->resourceId.' !';
+        $this->broadcast($msg, $conn);
     }
 
     /*
@@ -146,7 +139,7 @@ class Snake implements MessageComponentInterface
             if ($dest) {
                 if ($isIncluded && $dest == $client) {
                     $client->send($msg);
-                } else if ($isIncluded && $dest != $client) {
+                } else if (!$isIncluded && $dest != $client) {
                     $client->send($msg);
                 }
             } else {
