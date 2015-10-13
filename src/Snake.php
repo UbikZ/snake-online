@@ -23,6 +23,8 @@ class Snake implements MessageComponentInterface
 
     /** @var \SplObjectStorage  */
     protected $clients;
+    /** @var array  */
+    protected $positions = [];
 
     /**
      *
@@ -57,8 +59,10 @@ class Snake implements MessageComponentInterface
                     $this->clientUserConnect($from, $data['content']);
                     break;
                 case self::CLIENT_GAME_USER_SEND_POSITIONS:
+                    $this->clientGameUserSendPositions($from, $data['content']);
                     break;
                 case self::CLIENT_GAME_USER_RECEIVE_POSITIONS:
+                    $this->clientGameUserReceivePositions($from, $data['content']);
                     break;
                 default:
                     echo "No action type for {$from->resourceId} !\n";
@@ -78,6 +82,7 @@ class Snake implements MessageComponentInterface
     public function onClose(ConnectionInterface $conn)
     {
         $this->clients->detach($conn);
+        unset($this->positions[$conn->resourceId]);
 
         echo "Connection {$conn->resourceId} has disconnected\n";
     }
@@ -103,18 +108,49 @@ class Snake implements MessageComponentInterface
      */
     private function clientUserConnect(ConnectionInterface $conn, array $data)
     {
-        $msg = ['type' => self::SERVER_USER_NOTIFY, 'content' => [
+        $authMsg = $this->prepare(self::SERVER_GAME_LOAD, ['username' => $conn->resourceId]);
+        $this->broadcast($authMsg, $conn);
+
+        $msg = $this->prepare(self::SERVER_USER_NOTIFY, [
             'type' => 'info',
             'message' => 'New player ('.$conn->resourceId.') connected !',
-        ]];
+        ]);
         $this->broadcast($msg, $conn, false);
         $msg['content']['message'] = 'Welcome '.$conn->resourceId.' !';
         $this->broadcast($msg, $conn);
     }
 
+    /**
+     * @param ConnectionInterface $conn
+     * @param array $data
+     */
+    private function clientGameUserSendPositions(ConnectionInterface $conn, array $data)
+    {
+        $this->positions[$conn->resourceId]['positions'] = $data;
+    }
+
+    /**
+     * @param ConnectionInterface $conn
+     * @param array $data
+     */
+    private function clientGameUserReceivePositions(ConnectionInterface $conn, array $data)
+    {
+        $msg = $this->prepare(self::SERVER_GAME_USERS_POSITIONS, $this->positions);
+        $this->broadcast($msg, null);
+    }
+
     /*
      * Helpers
      */
+
+    /**
+     * @param $action
+     * @return array
+     */
+    private function prepare($action, $content = [])
+    {
+        return ['type' => $action, 'content' => is_array($content) ? $content : []];
+    }
 
     /**
      * @param $msg

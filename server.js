@@ -39,7 +39,6 @@ io.on('connection', function (ioSocket) {
     socket.on('client.game.user.send.positions', function(positions) {
       if (socket.username) {
         users[socket.username].positions = positions;
-        socket.emit('server.game.users.positions', users);
       }
     });
     socket.on('client.game.user.receive.positions', function(data) {

@@ -46,9 +46,10 @@ var Socket = function(_ws) {
    * @param users
    */
   function serverGameUsersPositions(users) {
+    console.info(users);
     var temp = [];
     for (var username in users) {
-      if (users.hasOwnProperty(username) && username != Game.username) {
+      if (username != Game.username) {
         temp.push(users[username].positions);
       }
     }

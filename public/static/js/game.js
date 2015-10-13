@@ -8,5 +8,5 @@ $(function(){
   finally{
     Game.Main.init($("#canvas"), socket);
   }
-  //Game.Main.start();
+  Game.Main.start();
 });
