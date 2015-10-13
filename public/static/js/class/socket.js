@@ -1,35 +1,44 @@
-var Socket = function(_socket, _snakeInstance) {
+var Socket = function(_ws) {
   'use strict';
 
-  var snakeInstance = _snakeInstance;
-  var socket = _socket;
+  var enabledSocketIO = typeof _ws != 'string';
+  var socket = enabledSocketIO ? _ws : new WebSocket(_ws);
 
-  socket.on('server.user.notify', serverUserNotify);
-  socket.on('server.game.load', serverGameLoad);
-  socket.on('server.game.users.positions', serverGameUsersPositions);
-
-  /**
-   *
-   */
-  function clientUserConnect() {
-    socket.emit('client.user.connect', {});
+  if (enabledSocketIO) {
+    socket.on('server.user.notify', serverUserNotify);
+    socket.on('server.game.load', serverGameLoad);
+    socket.on('server.game.users.positions', serverGameUsersPositions);
+  } else {
+    socket.addEventListener('open', function(e) {
+      console.log('open', e);
+    });
+    socket.addEventListener('message', function(data) {
+      var type = data.type;
+      if (type) {
+        switch (type) {
+          case 'server.user.notify':
+            serverUserNotify(data.content);
+            break;
+          case 'server.game.load':
+            serverGameLoad(data.content);
+            break;
+          case 'server.game.users.positions':
+            serverGameUsersPositions(data.content);
+            break;
+          default:
+            toastr.error('Wrong data type received from WebServer !');
+            break;
+        }
+      } else {
+        toastr.error('No data type received from WebServer !');
+      }
+    });
   }
 
-  /**
-   *
-   * @param positions
-   */
-  function send(positions) {
-    socket.emit('client.game.user.send.positions', positions);
-  }
 
-  /**
-   *
+  /*
+   *  Server methods
    */
-  function listen()
-  {
-    socket.emit('client.game.user.receive.positions', {});
-  }
 
   /**
    *
@@ -38,7 +47,7 @@ var Socket = function(_socket, _snakeInstance) {
   function serverGameUsersPositions(users) {
     var temp = [];
     for (var username in users) {
-      if (users.hasOwnProperty(username) && username != snakeInstance.username) {
+      if (users.hasOwnProperty(username) && username != Game.username) {
         temp.push(users[username].positions);
       }
     }
@@ -70,8 +79,41 @@ var Socket = function(_socket, _snakeInstance) {
    * @param data
    */
   function serverGameLoad(data) {
-    snakeInstance.name = data.username;
+    Game.username = data.username;
   }
+
+  /*
+   *  Client methods
+   */
+
+  function clientUserConnect() {
+    socketEmit('client.user.connect', {});
+  }
+
+  function send(positions) {
+    socketEmit('client.game.user.send.positions', positions);
+
+  }
+
+  function listen()
+  {
+    socketEmit('client.game.user.receive.positions', {});
+  }
+
+  /*
+   * Helpers
+   */
+
+  function socketEmit(type, content) {
+    if (enabledSocketIO) {
+      socket.emit(type, content);
+    } else {
+      if (socket.readyState === 1) {
+        socket.send(JSON.stringify({type: type, content: content}));
+      }
+    }
+  }
+
 
   // Public
   return {
