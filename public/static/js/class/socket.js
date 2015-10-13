@@ -108,10 +108,23 @@ var Socket = function(_ws) {
     if (enabledSocketIO) {
       socket.emit(type, content);
     } else {
-      if (socket.readyState === 1) {
+      waitConnection(socket, function() {
+        console.info('Emit to ' + type);
         socket.send(JSON.stringify({type: type, content: content}));
-      }
+      });
     }
+  }
+
+  function waitConnection(socket, callback) {
+    setTimeout(function() {
+      if (socket.readyState == 1) {
+        if (callback != null) {
+          callback();
+        }
+      } else {
+        waitConnection(socket, callback);
+      }
+    }, 5);
   }
 
 
