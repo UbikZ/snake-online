@@ -86,6 +86,7 @@ Game.Main = (function () {
     renderer.drawPoints(currentSnake.positions);
     generateMissingSnakes(Game.missingSnakes);
     if (snakes) {
+      Game.snakes = snakes;
       for (var user in snakes) {
         if (snakes.hasOwnProperty(user)) {
           var snake = snakes[user];

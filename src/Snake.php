@@ -119,7 +119,7 @@ class Snake implements MessageComponentInterface
         // Broadcast id / other snakes positions to client
         $authMsg = $this->prepare(self::SERVER_GAME_LOAD, [
             'username' => $conn->resourceId,
-            'snakes' => $this->positions
+            'snakes' => $positions
         ]);
         $this->broadcast($authMsg, $conn);
 
