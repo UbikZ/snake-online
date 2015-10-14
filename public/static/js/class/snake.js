@@ -1,8 +1,14 @@
-var Snake = function(options) {
+var Snake = function(user, options) {
   'use strict';
 
-  var positions = [];
-  var username;
+  const LEFT = 'left';
+  const RIGHT = 'right';
+  const UP = 'up';
+  const DOWN = 'down';
+
+  var positions = [],
+    direction = formatDirection(Math.floor(Math.random() * 4));
+  var username = user;
   var settings = $.extend({}, {
       width:  800,
       height: 800,
@@ -12,7 +18,11 @@ var Snake = function(options) {
       length: 5,
     }, options);
 
-  construct();
+  if (settings.positions == undefined) {
+    construct();
+  } else {
+    positions = settings.positions;
+  }
 
   /**
    *
@@ -26,21 +36,39 @@ var Snake = function(options) {
   /*
    * Movements
    */
-
-  function right() {
-    addNewCell(formatPositions(++positions[0].x, positions[0].y ))
+  function setDirection(dir) {
+    direction = dir;
   }
 
-  function left() {
-    addNewCell(formatPositions(--positions[0].x, positions[0].y ))
+  function getDirection() {
+    return direction;
   }
 
-  function up() {
-    addNewCell(formatPositions(positions[0].x, --positions[0].y ))
+  function setUsername(user) {
+    username = user;
   }
 
-  function down() {
-    addNewCell(formatPositions(positions[0].x, ++positions[0].y ))
+  function getUsername() {
+    return username;
+  }
+
+  function move() {
+    var x = positions[0].x, y = positions[0].y;
+    switch (direction) {
+      case RIGHT:
+        x = ++positions[0].x;
+        break;
+      case LEFT:
+        x = --positions[0].x;
+        break;
+      case DOWN:
+        y = ++positions[0].y;
+        break;
+      case UP:
+        y = --positions[0].y;
+        break;
+    }
+    addNewCell(formatPositions(x, y));
   }
 
   /**
@@ -102,15 +130,43 @@ var Snake = function(options) {
     return { x: posX, y: posY };
   }
 
+  /**
+   *
+   * @param value
+   */
+  function formatDirection(value) {
+    var direction = undefined;
+    switch (value) {
+      case 0:
+        direction = LEFT;
+        break;
+      case 1:
+        direction = RIGHT;
+        break;
+      case 2:
+        direction = UP;
+        break;
+      case 3:
+        direction = DOWN;
+        break;
+    }
+
+    return direction;
+  }
+
   // Public
   return {
     positions: positions,
     settings: settings,
-    username: username,
-    right: right,
-    left: left,
-    up: up,
-    down: down,
+    setUsername: setUsername,
+    getUsername: getUsername,
+    setDirection: setDirection,
+    getDirection: getDirection,
+    move: move,
     addCell: addNewCell,
+    LEFT: LEFT,
+    RIGHT: RIGHT,
+    UP: UP,
+    DOWN: DOWN,
   };
 };

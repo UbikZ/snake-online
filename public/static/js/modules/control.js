@@ -8,12 +8,13 @@ Game.Control = (function () {
   const UP = 'up';
   const DOWN = 'down';
 
-  var snake, direction;
+  var snake, socket, direction;
 
   /**
    *
    */
-  function enable() {
+  function enable(instanceSocket) {
+    socket = instanceSocket;
     direction = getDirection(Math.floor(Math.random() * 4));
     $(document).keydown(function(e){
       var key = e.which;
@@ -26,6 +27,7 @@ Game.Control = (function () {
       } else if (key == '40' && direction != UP) {
         direction = DOWN;
       }
+      socket.sendDirection(direction);
     });
   }
 
@@ -44,34 +46,16 @@ Game.Control = (function () {
     snake = instanceSnake;
     if (direction == LEFT && direction != RIGHT) {
       snake.left();
+      socket.sendDirection(LEFT);
     } else if (direction == UP && direction != DOWN) {
       snake.up();
+      socket.sendDirection(UP);
     } else if (direction == RIGHT && direction != LEFT) {
       snake.right();
+      socket.sendDirection(RIGHT);
     } else if (direction == DOWN && direction != UP) {
       snake.down();
-    }
-  }
-
-  /**
-   *
-   * @param value
-   */
-  function getDirection(value) {
-    var direction = undefined;
-    switch (value) {
-      case 0:
-        direction = LEFT;
-        break;
-      case 1:
-        direction = RIGHT;
-        break;
-      case 2:
-        direction = UP;
-        break;
-      case 3:
-        direction = DOWN;
-        break;
+      socket.sendDirection(DOWN);
     }
   }
 
@@ -80,6 +64,9 @@ Game.Control = (function () {
     enable: enable,
     disable: disable,
     listen: listen,
-    currentDirection: direction,
+    LEFT: LEFT,
+    RIGHT: RIGHT,
+    UP: UP,
+    DOWN: DOWN,
   };
 })();

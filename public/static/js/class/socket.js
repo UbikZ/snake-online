@@ -14,7 +14,6 @@ var Socket = function(_ws) {
     });
     socket.addEventListener('message', function(message) {
       var data = JSON.parse(message.data), type = data.type;
-      //console.info(data);
       if (type) {
         switch (type) {
           case 'server.user.notify':
@@ -25,6 +24,9 @@ var Socket = function(_ws) {
             break;
           case 'server.game.users.positions':
             serverGameUsersPositions(data.content);
+            break;
+          case 'server.game.users.directions':
+            serverGameUsersDirections(data.content);
             break;
           default:
             toastr.error('Wrong data type received from WebServer !');
@@ -46,15 +48,29 @@ var Socket = function(_ws) {
    * @param users
    */
   function serverGameUsersPositions(users) {
-    console.info(users);
     var temp = [];
     for (var username in users) {
       if (username != Game.username) {
-        temp.push(users[username].positions);
+        temp[username] = users[username].positions;
       }
     }
 
-    Game.positions = temp;
+    Game.missingSnakes = temp;
+  }
+
+  /**
+   * @param users
+   */
+  function serverGameUsersDirections(users) {
+    var temp = [];
+    Game.directions = temp;
+    for (var username in users) {
+      if (username != Game.username) {
+        temp[username] = users[username];
+      }
+    }
+
+    Game.directions = temp;
   }
 
   /**
@@ -82,19 +98,23 @@ var Socket = function(_ws) {
    */
   function serverGameLoad(data) {
     Game.username = data.username;
+    Game.originSnakes = data.snakes;
   }
 
   /*
    *  Client methods
    */
 
-  function clientUserConnect() {
-    socketEmit('client.user.connect', {});
+  function clientUserConnect(positions) {
+    socketEmit('client.user.connect', { positions: positions });
   }
 
-  function send(positions) {
+  function sendPositions(positions) {
     socketEmit('client.game.user.send.positions', positions);
+  }
 
+  function sendDirection(direction) {
+    socketEmit('client.game.user.send.direction', {direction : direction});
   }
 
   function listen()
@@ -111,7 +131,6 @@ var Socket = function(_ws) {
       socket.emit(type, content);
     } else {
       waitConnection(socket, function() {
-        //console.info('Emit to ' + type + ' with ' + content);
         socket.send(JSON.stringify({type: type, content: content}));
       });
     }
@@ -133,7 +152,8 @@ var Socket = function(_ws) {
   // Public
   return {
     connect: clientUserConnect,
-    send: send,
+    sendPositions: sendPositions,
+    sendDirection: sendDirection,
     listen: listen,
   };
 };
