@@ -20,9 +20,9 @@ var Renderer = function(canvasDOM) {
    *
    */
   function drawBackground() {
-    ctx.fillStyle = "white";
+    ctx.fillStyle = "#212121";
     ctx.fillRect(0, 0, width, height);
-    ctx.strokeStyle = "black";
+    ctx.strokeStyle = "#333";
     ctx.strokeRect(0, 0, width, height);
   }
 
